@@ -1,0 +1,961 @@
+---
+title: "Course Notes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Notes for the MIT Open Courseware version of Introduction to Algorithms, 2011. Class homepage found [here](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/index.htm)
+
+## Unit 1: Introduction
+
+__Reading__: 1, 3, D.1, [Python cost model](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/readings/python-cost-model)
+
+### Asymptotic notation
+
+* Asymptotic notation applies to functions not to algorithms
+* When applied to running time, need to specify _which_ (worst-case, all inputs)
+
+#### $\Theta$-notation
+
+__Definition__
+
+For a given function $g(n)$, we denote $\Theta(g(n))$ the _set of functions_
+
+$$
+\Theta(g(n)) = \{f(n) : \text{ there exist positive constants } c_1, c_2,\text{ and } n_0 
+\text{ such that } \\
+0 \leq c_1g(n) \leq f(n) \leq c_2g(n) \text{ for all } n \geq n_0\}
+$$
+
+This definition requires that $f(n)$ is _asymptotically nonnegative_.
+
+In words, we write $f(n) = \text{ or } \in \Theta(g(n))$ if there exist positive constants $c_1,c_2,n_0$ such that at and to the right of $n_0$, the value of $f(n)$ always lies between $c_1g(n)$ and $c_2g(n)$.
+
+If $f(n) = \Theta(g(n))$ then $g(n)$ is an __asymptotically tight bound__ for $f(n)$.
+
+__Proving $f(n) = \Theta(g(n))$__
+
+_Example:_
+
+Let $f(n) = \frac{1}{2}n^2 - 3n$. To show $f(n) = \Theta(n^2)$ we want to show that $c_1n^2 \leq \frac{1}{2}n^2 - 3n \leq c_2n^2$ for all $n \geq n_0$ for some $c_1,c_2,n_0$.
+
+$$
+\begin{aligned}
+c_1n^2 \leq &\frac{1}{2}n^2 - 3n \leq c_2n^2 \\
+&\text{ dividing by } n^2 \text{ yields}\\
+c_1 \leq &\frac{1}{2} - \frac{3}{n} \leq c_2
+\end{aligned}
+$$
+
+Solving the left and right inequalities gives $c_1 = \frac{1}{14}, c_2 = \frac{1}{2}, n_0 = 7$ as an acceptable solution. We only need to show there exists one solution, although there are infinitely many others.
+
+_In general_ for any polynomial $f(n) = \sum_{i=0}^d a_in^i$ where $a_i$ are constants and $a_d > 0$, $f(n) = \Theta(n^d)$
+
+_Note_ that a constant function is often denoted as $\Theta(1)$.
+
+__Proving $f(n) \neq \Theta(g(n))$__
+
+_Example_
+
+Let $f(n) = 6n^3$. To show that $f(n) \neq \Theta(n^2)$ we use contradiction. Suppose that $c_2$ and $n_0$ exist such that $6n^3 \leq c_2n^2$ for all $n \geq n_0$. Dividing by $n^2$ yields $n \leq \frac{c_2}{6}$ for all $n \geq n_0$ but this is impossible for arbitrarily large $n$ since $c_2$ is a constant.
+
+#### $O$-notation
+
+An asymptotic upper bound
+
+__Definition__
+
+$$
+O(g(n)) = \{f(n) : \text{ there exist positive constants } c \text{ and } n_0 \text{ such that } \\
+0 \leq f(n) \leq cg(n) \text{ for all } n \geq n_0\}
+$$
+
+In words: for all values $n$ at and to the right of $n_0$, the value of the function $f(n)$ is on or below $cg(n)$.
+
+__Compare to $\Theta$-notation__
+
+* $\Theta$-notation asymptotically bounds a function from above _and_ below.
+* $O$-notation asymptotically bounds a function from _above only_.
+* $\Theta$-notation is stronger than $O$-notation, so $O(g(n)) \subset \Theta(g(n))$.
+* $O$-notation makes no claims about how tight the bound is.
+
+_When bounding running time_
+
+* When we use $O$-notation to bound the worst-case running time of an algorithm, we have a bound on the running-time on _every_ input, because it is an __upper__ bound.
+* In contrast, a $\Theta(n^2)$ bound on the worst-case running time does __not__ imply a $\Theta(n^2)$ bound on the running time for all imputs.
+
+__$o$-notation__
+
+* Denotes an upper bound that is _not_ asymptotically tight.
+
+$$
+o(g(n)) = \{f(n) : \text{ for any positive constant } c > 0 \text{ there exists a constant } n_0 > 0 \text{ such that } \\
+0 \leq f(n) < cg(n) \text{ for all } n \geq n_0\}
+$$
+
+Intuitively, $f(n)$ becomes insignificant relative to $g(n)$ as $n \to \infty$ or
+$$
+\lim_{n \to \infty} \frac{f(n)}{g(n)} = 0
+$$
+
+e.g. $2n = o(n^2)$ but $2n^2 \neq o(n^2)$
+
+#### $\Omega$-notation
+
+An asymptotic lower bound
+
+__Definition__
+
+$$
+\Omega(g(n)) = \{f(n) : \text{ there exist positive constants } c \text{ and } n_0 \text{ such that } \\
+0 \leq cg(n) \leq f(n) \text{ for all } n \geq n_0\}
+$$
+
+In words: for all values of $n$ at or to the right of $n_0$, the value of $f(n)$ is on or above $cg(n)$.
+
+__$\omega$-notation__
+
+* $\omega$-notation is to $\Omega$-notation as $o$-notation is to $O$-notation
+
+e.g. $\frac{n^2}{2} = \omega(n)$ but $\frac{n^2}{2} \neq \omega(n^2)$.
+
+
+#### Properties & Comparing Functions
+
+__Theorem__
+For any two functions $f(n)$ and $g(n)$, we have $f(n) = \Theta(g(n))$ if and only if $f(n) = O(g(n))$ and $f(n) = \Omega(g(n))$.
+
+__Transitivity__
+
+Let $X$ denote one of $\Theta, O, o, \Omega, \omega$.
+
+$$
+f(n) = X(g(n)) \text{ and } g(n) = X(h(n)) \Rightarrow f(n) = X(h(n))
+$$
+
+__Reflexivity__
+
+Let $Y$ denote one of $\Theta, O, \Omega$
+
+$$
+f(n) = Y(f(n))
+$$
+
+__Symmetry__
+
+$$
+f(n) = \Theta(g(n)) \text{ if and only if } g(n) = \Theta(f(n))
+$$
+
+__Transpose Symmetry__
+
+$$
+f(n) = O(g(n)) \text{ if and only if } g(n) = \Omega(f(n))\\
+f(n) = o(g(n)) \text{ if and only if } g(n) = \omega(f(n))
+$$
+__Analogy to real numbers__
+
+$f(n) = O(g(n))$ is like $a \leq b$
+$f(n) = \Omega(g(n))$ is like $a \geq b$
+$f(n) = \Theta(g(n))$ is like $a = b$
+$f(n) = o(g(n))$ is like $a < b$, "$f(n)$ is asymptotically smaller than $g(n)$"
+$f(n) = \omega(g(n))$ is like $a > b$, "$f(n)$ is asymptotically larger than $g(n)$"
+
+_Note_ that not all functions are asymptotically comparable (unlike real numbers)
+
+#### Common Complexities in this course
+
+In increasing complexity:
+
+$O(1) < O(\log N) < O(N) < O(N\log N) < O(N^2)$
+
+_Note_: $O$ usually used to mean $\Theta$.
+
+### Standard Notations and Common Functions
+
+See Chapter 3.2 of the text for detailed definitions of standard mathematical functions and notations and the relationships between them.
+
+### Matrices
+
+See Appendix D for basic matrix definitions and operations
+
+### The Python Cost Model
+
+See [here](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/readings/python-cost-model/) for a full list of Python operations and their run times, with code to execute runtime experiments.
+
+### Peak Finding
+
+#### One-Dimensional version
+
+__Definition__: 
+
+An element at position $i$ in an array is a peak if the elements in positions $i - 1$ and $i + 1$ (or to one side if on the edge) are less than or equal to the element at position $i$.
+
+__Problem__: Find a peak if it exists. (Note we can show it always exists)
+
+__Straightforward Linear Algorithm__:
+
+* Start from one side and work to the other
+* Worst case you look at all the elements, so worst-case runtime is $\Theta(n)$.
+
+__Divide & Conquer__:
+
+Start at position $n/2$.
+
+If $x[n/2 - 1]$ > $x[n/2]$, look at $x[0]...x[n/2-1]$ for a peak.
+
+Else if $x[n/2 + 1]$ > $x[n/2]$, look at $x[n/2 +1]...x[n]$ for a peak.
+
+Else, we are done and $x[n/2]$ is a peak.
+
+__Definition__: $T(n)$ = The "work" the algorithm does on input of size $n$.
+
+Then in this case $T(n) = T(n/2) + \Theta(1)$.
+
+Base case: $T(1) = \Theta(1)$
+
+So: $T(n) = T(1) + ... + T(1)$, $\log_2 n$ times = $\Theta(\log_2 n)$
+
+#### Two-Dimensional Version
+
+__Definition__: Let $X$ be an $n x m$ matrix. $X[i,j]$ is a peak if $X[i,j] \geq X[i\pm 1, j]$ and $X[i,j] \geq X[i, j \pm 1]$. (Peak always exists)
+
+__Greedy ascent algorithm__:
+* Pick a direction and try to follow it to find a peak. Keep going while you are increasing.
+* $\Theta(nm)$ complexity.
+
+__Divide & Conqueer__:
+* Pick a middle column $j = m/2$
+* Find the global maximum of that column at $(i,j)$
+* If $(i, j-1) > (i, j)$, look at columns 0,...,$j-1$ for a peak.
+* Else if $i, j+1) > (i,j)$, look at columns $j+1$,...,$m$ for a peak.
+* Else $(i,j)$ is a 2-D peak.
+* When you have a single column, the global max in the column is a peak.
+
+Then $T(n, m) = T(n, m/2) + \Theta(n)$ (since finding a global max is $\Theta(n)$)
+
+Base case: $T(n, 1) = \Theta(n)$
+
+So: $T(n, m) = \Theta(n) + ... + \Theta(n)$ $\log_2 m$ times $= \Theta(n\log_2 m)$
+
+## Unit 2: Sorting and Trees
+
+### Insertion Sort
+
+* Efficient for small input
+* $\Theta(n^2)$
+* Similar to how humans sort cards: start with all cards in right hand. One by one, place cards in sorted order in left hand, working from right to left to find correct position.
+
+#### Pseudocode
+
+```{python, eval=FALSE}
+for j = 2 to A.length:
+  key = A[j]
+  # insert A[j] into the sorted sequence A[1...j-1]
+  i = j - 1
+  while i > 0 and A[i] > key:
+    A[i + 1] = A[i]
+    i = i - 1
+  A[i + 1] = key
+```
+
+__Loop invariant__: At the start of each iteration of the `for` loop above, the subarray $A[1,...,j-1]$ consists of the elements originally in $A[1,...,j-1]$, but in sorted order.
+
+#### Proof of correctness
+
+* We use a process similar to induction, where we use the loop invariant and show three properties:
+
+1) *Initialization*: It is true prior to the first iteration of the loop. (base case)
+2) *Maintenance*: If it is true before an iteration of the loop, it remains true before the next iteration. (inductive step)
+3) *Termination*: When the loop terminates, the invariant gives us a useful property that helps show the algorithm is correct. (different to induction because we don't go to infinity)
+
+*Initialization*: We start by showing that the loop invariant holds before the first loop iteration, when `j=2`. The subarray `A[1,...,j-1]` consists of just `A[1]`, which is the original element in `A[1]` and is trivially sorted.
+
+*Maintenance*: Informally, the for loop works by moving `A[j-1]`, `A[j-2]`, `A[j-3]`, and so on by one position to the right until it finds the proper position for `A[j]`. The subarray `A[1,...,j]` then contains the original elements in `A[1,...,j]` but in sorted order.
+
+*Termination*: The condition that causes the for loop to terminate is that `j > A.length = n`. Because each loop iteration increases `j` by 1, we must have `j = n + 1` at termination. We then have that the subarray `A[1,...,n]` consists of the elements originally in `A[1,...,n]` in sorter order. `A[1,...,n]` is the entire array, hence the algorithm is correct.
+
+#### Analysis of runtime
+
+| Insertion Sort | cost | times |
+|----------------|------|-------|
+| `for j = 2 to A.length` | $c_1$ | $n$ |
+| `key = A[j]` | $c_2$ | $n - 1$ |
+| `# Insert A[j] into the sorted sequence A[1...j-1]` | 0 | $n - 1$ |
+| `i = j - 1` | $c_4$ | $n - 1$ |
+| `while i> 0 and A[i] > key` | $c_5$ | $\sum_{j=2}^nt_j$ |
+| `A[i + 1] = A[i]` | $c_6$ | $\sum_{j=2}^n(t_j - 1)$ |
+| `i = i - 1` | $c_7$ |  $\sum_{j=2}^n(t_j - 1)$ |
+| `A[i+1] = key` | $c_8$ | $n - 1$ |
+
+Then
+
+$$
+\begin{aligned}
+T(n) = &c_1n + c_2(n-1) + c_4(n-1) + c_5\sum_{j=2}^nt_j+ c_6\sum_{j=2}^n(t_j-1) \\
+&+ c_7\sum_{j=2}^n(t_j-1) + c_8(n-1)
+\end{aligned}
+$$
+
+In the __best case__ scenario, the array is already sorted, so $t_j = 1$ for all $j$. Then
+
+$$
+\begin{aligned}
+T(n) = &c_1n + c_2(n-1) + c_4(n-1) + c_5(n-1) + c_8(n-1) \\
+= &(c_1 + c_2 + c_4 + c_5 + c_8)n - (c_2 + c_4 + c_5 + c_8) \\
+= &\Theta(n)
+\end{aligned}
+$$
+
+In the __worse case__ scenario, the array is in reverse order, so $t_j = j$ for all $j$. Then
+
+$$
+\begin{aligned}
+&\sum_{j=2}^n j = \frac{n(n + 1)}{2} - 1\\
+&\sum_{j=2}^n(j - 1) = \frac{n(n-1)}{2}\\
+T(n) = &c_1n + c_2(n-1) + c_4(n-1) + c_5(\frac{n(n + 1)}{2} - 1)+ c_6(\frac{n(n-1)}{2}) \\
+&+ c_7(\frac{n(n-1)}{2}) + c_8(n-1) \\
+= &(\frac{c_5 + c_6 + c_7}{2})n^2 + (c_1 + c_2 + c_4 + \frac{c_5-c_6-c_7}{2} + c_8)n - (c_2 + c_4 + c_5 + c_8) \\
+= &an^2 + bn + c \\
+= &\Theta(n^2)
+\end{aligned}
+$$
+
+### Merge Sort
+
+* A divide and conquer approach
+* Requires a subroutine `MERGE(A, p, q, r)` that merges two sorted arrays into a sorted array ($\Theta(n)$)
+  * Given two sorted arrays `L = A[p, q]` and `R = A[q + 1, r]`, create a new sorted array `A'` by looking at the first element of each `L` and `R` and appending the smaller element to `A'`, removing it from `L`/`R`. Once either `L` or `R` is empty, add the remaining elements of the non-empty sub-array to `A'`.
+  * Proof that `MERGE` is correct uses the loop invariant: at the start of each iteration `A'[p, ..., k-1]` contains the `k-p` smallest elements of `L` and `R` in sorted order. Further the next elements of `L` and `R` are the smallest elements of each array that have not been moved into `A'`.
+
+#### Pseudocode
+
+```{python, eval=FALSE}
+MERGE-SORT(A, p, r)
+if p < r:
+  q = floor((p + r)/2)
+  MERGE-SORT(A, p, q)
+  MERGE-SORT(A, q + 1, r)
+  MERGE(A, p, q, r)
+```
+
+#### Analysis of runtime
+
+__Divide:__ The divide step computes the middle of the subarray in constant time, $D(n) = \Theta(1)$
+
+__Conquer:__ We solve 2 subproblems each of size $\frac{n}{2}$, contributing $2T(n/2)$ to the runtime.
+
+__Combine:__ The `MERGE` procedure combines the solutions in $C(n) = \Theta(n)$ time.
+
+$$
+T(n) = \begin{cases}
+\Theta(1) &\text{ if }n = 1,\\
+2T(n/2) + \Theta(1) + \Theta(n) &\text{ if } n > 1.
+\end{cases}
+$$
+
+we can re-write this without $\Theta$-notation:
+
+$$
+\begin{aligned}
+T(n) &= \begin{cases}
+c &\text{ if }n = 1,\\
+2T(n/2) + cn &\text{ if } n > 1. 
+\end{cases}\\
+&= cn(\lg n + 1) = cn\lg n + cn \\
+&= \Theta(n\lg n)
+\end{aligned}
+$$
+
+### Recurrence Relations
+
+* Arise from divide-and-conquer algorithms
+
+#### General set-up
+
+Let $T(n)$ be the running time on a problem of size $n$. If the problem size is small enough, say $n \leq c$, then the problem takes constant time, $\Theta(1)$. Otherwise, we divide the problem into $a$ subproblems, each of which is $1/b$ the size of the original problem. It then takes $aT(n/b)$ time to solve the problem. If we take $D(n)$ time to divide the problem and $C(n)$ time to combine the solutions to the subproblems, then we get:
+
+$$
+T(n) = \begin{cases}
+\Theta(1) &\text{ if }n \leq c,\\
+aT(n/b) + D(n) + C(n) &\text{ otherwise.}
+\end{cases}
+$$
+
+#### Solving recurrence relations
+
+##### The substitution method
+
+1) Guess the form of the solution
+2) Use mathematical induction to find the constants and show that the solution works
+
+__Example__
+
+Show $T(n) = 2T(\lfloor n/2\rfloor) + n = O(n\lg n)$.
+
+1) Assume that $T(m) \leq cm \lg m$ for all $m < n$. Then in particular we assume $T(\lfloor n/2 \rfloor) \leq c \lfloor n/2 \rfloor \lg \lfloor n/2 \rfloor$.
+2) Substitute into the recurrence relation:
+
+$$
+\begin{aligned}
+T(n) &= 2T(\lfloor n/2\rfloor) + n\\
+&\leq 2(c \lfloor n/2 \rfloor \lg \lfloor n/2 \rfloor) + n\\
+&\leq cn\lg (n / 2) + n\\
+&= cn\lg n - cn \lg 2 + n\\
+&= cn\lg n - cn + n\\
+&\leq cn \lg n, \text{ when } c \geq 1
+\end{aligned}
+$$
+
+3) Show that the solution holds for the boundary conditions.
+
+We need to show that we can choose $c$ such that $T(n) \leq cn\lg n$ holds for the boundary conditions. In this example, if our boundary condition is $T(1) = 1$, this condition does not hold. We can use the fact that $O$-notation requires the inequality to hold for all $n \geq n_0$ so we can choose $n_0 = 2$. $T(2)$ and $T(3)$ are the only terms that rely on $T(1)$ so we can use them as the boundary condition. $T(1) = 1 \Rightarrow T(2) = 2T(1) + 2 = 4 \text{ and } T(3) = 2T(1) + 3 = 5$. Then we can show that for any $c \geq 2$, $T(2) = 4 \leq c2\lg 2$ and $T(3) = 5 \leq c3\lg 3$.
+
+__Changing variables__
+
+A change of variables to make a recurrence relation look like something you've seen before can help! e.g.
+
+$$
+T(n) = 2T(\sqrt{n}) + \lg n\\
+\text{Let }m = \lg n\\
+T(2^m) = 2T(2^{m/2}) + m\\
+\text{Let }S(m) = T(2^m)\\
+S(m) = 2S(m/2) + m = O(m\lg m)\\
+T(n) = T(2^m) = S(m) = O(m\lg m) = O(\lg n \lg \lg n)
+$$
+
+##### The recursion tree method
+
+* Can be used sloppily to make a guess and verify with the subsitution method
+  * Some reasonable sloppy assumptions include ignoring floors and assuming $n$ is an exact power to make division into subproblems even.
+* Use rigorously for a full proof
+
+1) The root of the tree is the non-recursive part of the recursion i.e. $D(n) + C(n)$
+2) The root has $a$ children, each with value $T(n/b)$, which can be expanded to $D(n/b) + C(n/b)$ with another $a$ children of $T(n/b^2)$ and so on down to the leaf nodes $T(1)$
+3) The height of the tree:
+  * The subproblem size at depth $i$ is $n/b^i$
+  * The subproblem size hits 1 when $n/b^i = 1$ or $i = \log_bn$
+  * Thus the tree has $\log_bn + 1$ levels
+4) Cost at each level of the tree:
+  * Each level has $a$ times more nodes than the level above, so the number of nodes at depth $i$ is $a^i$.
+  * Subproblem size reduces by a factor of $b$ at each level, so each node at depth $i$ has cost $D(n/b^i) + C(n/b^i)$ except the leaf nodes which have constant cost.
+  * Cost at depth $i$ is $a^i(D(n/b^i) + C(n/b^i))$ for each level except the bottom one.
+5) Add up cost of all levels to determine the cost for the entire tree, then guess a bound.
+6) Use substitution to prove the bound.
+
+##### The master method
+
+__Theorem__
+Let $a \geq 1$ and $b > 1$ be constants, let $f(n)$ be a function and let $T(n)$ be defined on the nonnegative integers by the recurrence
+
+$T(n) = aT(n/b) + f(n)$
+
+where we interpret $n/b$ to mean either $\lfloor n/b \rfloor$ or $\lceil n/b \rceil$. Then $T(n)$ has the following asymptotic bounds:
+
+1. If $f(n) = O(n^{\log_b a - \epsilon})$ for some constant $\epsilon > 0$, then $T(n) = \Theta(n^{\log_b a})$.
+2. If $f(n) = \Theta(n^{\log_b a})$, then $T(n) = \Theta(n^{\log_b a}\lg n)$.
+3. If $f(n) = \Omega(n^{\log_b a + \epsilon})$ for some constant $\epsilon > 0$, and if $af(n/b) \leq cf(n)$ for some constant $c < 1$ and all sufficiently large $n4, then $T(n) = \Theta(f(n)).
+
+Notes:
+* Intuitively, we compare $f(n)$ with $n^{\log_b a}$, and whichever is larger determines the bounds on $T(n)$.
+* Note that $f(n)$ must be *polynomially* smaller or larger than $n^{\log_b a}$ or equal to it. There are cases where $f(n)$ is smaller/larger but not polynomially smaller/larger, in which case we can't use the master theorem.
+* In the third case, there is a regularity condition that must be satisfied. It is almost always satisfied by polynomially bounded functions.
+
+__Example 1__
+
+$$
+\begin{aligned}
+&T(n) = 9T(n/3) + n\\
+\Rightarrow &a = 9, b = 3, f(n) = n\\
+\Rightarrow &n^{\log_b a} = n^{\log_3 9} = n^2 = \Theta(n^2)\\
+f(n) &= n = \Theta(n) = O(n^{2-1}), \text{ so we are in case 1 and }\\
+T(n) &= \Theta(n^{\log_b a}) = \Theta(n^2)
+\end{aligned}
+$$
+
+__Example 2__
+
+$$
+\begin{aligned}
+&T(n) = 2T(n/2) + n\lg n\\
+\Rightarrow &a = 2, b = 2, f(n) = n\lg n\\
+\Rightarrow &n^{\log_b a} = n^{\log_2 2} = n^1 = \Theta(n)\\
+f(n) &= n\lg n = \Theta(n\lg n) = \Omega(n) \neq \Omega(n^{1-\epsilon}), \text{ so we cannot use the master theorem.}
+\end{aligned}
+$$
+
+### Heap Sort
+
+* Complexity $O(n\lg n)$
+* Sorts in place
+* Uses a heap data structure to manage info
+
+#### The heap
+
+* A binary heap is an array visualized as a *nearly complete* binary tree (may not have a complete bottom layer)
+* Let $A$ be an array
+  * $A.length$ - the length of the array
+  * $A.heap_size$ - the number of valid elements of the heap
+  * $A[1]$ - the root of the tree
+  * For element $A[i]$:
+    * `Parent`$(i) = \lfloor i/2 \rfloor$ - shift $i$ one bit right
+    * `Left`$(i) = 2i$ - shift $i$ one bit left
+    * `Right`$(i) = 2i + 1$ - shift $i$ one bit left and add 1 as the low-order bit
+* All nodes satisfy the **max-heap property** (in a max-heap, min-heap is opposite): $A[$`Parent`$(i)] \geq A[i]$
+* The height of a heap with $n$ elements is $\Theta(\lg n)$
+
+#### Adding an element to a Max Heap
+
+* We'll call the procedure `Max-Heapify`.
+* Runs in $O(\lg n)$ time or $O(h)$ where $h$ is the height of the heap.
+* "Bubbles" down the new element
+* __Pre-condition:__ The subtrees rooted at `Left`$(i)$ and `Right`$(i)$ are max-heaps.
+
+```{python, eval=FALSE}
+Max-Heapify(A, i)
+# A is the heap, i is the root node of the sub-tree to max-heapify
+l = Left(i)
+r = Right(i)
+if l <= A.heap_size and A[l] > A[i]:
+  largest = l
+else largest = i
+if r <= A.heap_size and A[r] > A[largest]
+  largest = r
+if largest != i:
+  exchange A[i] with A[largest]
+  Max-Heapify(A, largest)
+```
+
+__Running time__
+
+* Fixing up the relationships between $A[i]$ and it's children is $\Theta(1)$
+* The max size of the subtree rooted at one of the children of $A[i]$ is $2n/3$
+
+$$
+T(n) \leq T(2n/3) + \Theta(1)\\
+\Rightarrow T(n) = O(\lg n) \text{, by the Master Theorem}
+$$
+
+#### Building a Max Heap
+
+* Builds a max-heap from an unordered array of length $n$
+* Runs in $O(n)$ time
+* Starts at the second-to-bottom level of the tree and runs `Max-Heapify` on each node in the tree. Leaves don't need to be `Max-Heapify`-d because a leaf is already a trivial max-heap. The leaves are nodes $A[\lfloor n / 2 \rfloor + 1,...,n]$.
+
+```{python, eval=FALSE}
+Build-Max-Heap(A)
+A.heap_size = A.length
+for i = floor(A.length / 2) downto 1:
+  Max-Heapify(A, i)
+```
+
+__Correctness__
+
+Loop invariant: At the start of each iteration of the for loop, each node $i + 1$, $i + 2$, ..., $n$ is the root of a max-heap.
+
+*Initialization*: Prior to the first iteration of the loop, $i = \lfloor n/2 \rfloor$. Each node $\lfloor n / 2 \rfloor + 1,...,n$ is a leaf and is thus the root of a trivial max-heap.
+
+*Maintenance*: The children of node $i$ are all numbered higher than $i$. Therefore by the loop-invariant they are roots of max-heaps. This is the condition required for `Max-Heapify`$(A, i)$ to make node $i$ the root of a max-heap and preserves the property that all nodes greater than $i$ are roots of a max-heap. Decrementing $i$ reestablishes the loop invariant.
+
+*Termination*: At termination $i=0$. Then by the loop invariant all nodes $1,...,n$ are roots of a max-heap. In particular, node 1 is.
+
+__Running time__
+
+_An upper bound:_ Each call to `Max-Heapify` takes $O(\lg n)$ time. There are $n$ calls to it. So the running time is $O(n\lg n)$.
+
+_A tighter upper bound:_ Each call to `Max-Heapify` takes $O(h)$ time where $h$ is the height of the subtree it's called on. Note that an $n$-element heap has height $\lfloor \lg n \rfloor$ and at most $\lceil n / 2^{h+1} \rceil$ nodes of height $h$. Then we can define an upper bound of:
+
+$$
+\sum_{h=0}^{\lfloor \lg n \rfloor}\lceil \frac{n}{2^{h+1}} \rceil O(h) = O(n\sum_{h=0}^{\lfloor \lg n \rfloor}\frac{h}{2^h})\\
+\sum_{h=0}^\infty \frac{h}{2^h} = \frac{1/2}{(1-1/2)^2} = 2\\
+\Rightarrow O(n\sum_{h=0}^{\lfloor \lg n \rfloor}\frac{h}{2^h}) = O(n\sum_{h=0}^\infty \frac{h}{2^h}) = O(2n) = O(n)
+$$
+
+#### Heapsort Algorithm
+
+1) Starts by building a max-heap with the array
+2) We now the largest element is at $A[1]$. We can put $A[1]$ in its correct position by swapping $A[1]$ and $A[n]$ and decrementing $A.heap_size$ by 1.
+3) Now we run `Max-Heapify` on the smaller (by one element) tree rooted at node 1 to restore the max-heap property.
+4) Repeat steps 2 & 3 until the heap is one element.
+
+```{python, eval=FALSE}
+Heapsort(A)
+Build-Max-Heap(A)
+for i = A.length downto 2:
+  exchange A[1] with A[i]
+  A.heap_size = A.heap_size - 1
+  Max-Heapify(A,1)
+```
+
+__Running Time__
+
+The call to `Build-Max-Heap` takes $O(n)$ and each of the $n - 1$ calls to `Max-Heapify` takes $O(\lg n)$. Therefore `Heapsort` takes $O(n\lg n)$ time.
+
+$$
+\begin{aligned}
+T(n) &= O(n) + (n-1)O(\lg n)\\
+&= O(n\lg n) - O(\lg n) + O(n)\\
+&= O(n \lg n)
+\end{aligned}
+$$
+
+### Binary Search Trees & BST Sort
+
+#### Representing Trees
+
+##### Binary/Bounded Branching Trees
+
+* Use attributes $p$, $left$ and $right$ to point to parent, left and right child of each node.
+  * If $p = $`NULL`, the node is the root. If $left$ and $right=$`NULL`, the node is a leaf.
+* $T.root$ points to the root of the tree. If $T.root=$`NULL`, the tree is empty.
+* Can be extended to trees with $k$ children of each node.
+
+##### Rooted Trees with Unbounded Branching
+
+* Only uses $O(n)$ space for an $n$-node rooted tree
+* $T.root$ still points to the root and $p$ points to a node's parent.
+* Each node has a $left-child$ and $right-sibling$ attribute.
+  * If a node has no children, $left-child=$`NULL`
+  * If a node is the right-most child of its parent, $right-sibling=$`NULL`
+
+#### What is a Binary Search Tree?
+
+* A binary tree that satisfies the __binary-search-tree property__: Let $x$ be a node in a binary search tree. If $y$ is a node in the left subtree of $x$ then $y.key \leq x.key$. If $y$ is a node in the right subtree of $x$, then $y.key \geq x.key$.
+* The same sequence could be represented by many different binary search trees. Most search-tree operations run in $O(h)$ time, so we want to keep the height of the tree small.
+
+##### Tree Walks
+
+Using printing out the values as an example:
+
+* __In-order tree walk__ prints out the values in the left subtree, then the root, then the values in the right subtree. A binary-search tree allows us to use __in-order__ tree walk to sort the values.
+* __Pre-order tree walk__ prints out the root before the values in either subtree.
+* __Post-order tree walk__ prints out the values in both subtrees before the root.
+
+```{python, eval=FALSE}
+Inorder-Tree-Walk(x):
+if x != NULL:
+  Inorder-Tree-Walk(x.left)
+  print x.key
+  Inorder-Tree-Walk(x.right)
+```
+
+__Theorem__: `Inorder-Tree-Walk(x)` takes $\Theta(n)$ time when $x$ is the root of an $n$-node binary tree.
+
+__Proof__: Let $T(n)$ be the time taken by `Inorder-Tree-Walk(x)` when called on an $n$-node binary tree. Since `Inorder-Tree-Walk(x)` visits all $n$ nodes, $T(n) = \Omega(n)$. To show that $T(n) = O(n)$ we use substitution and prove that $T(n) \leq (c+d)n + c$. For $n=0$, $(c+d)0 + c = c = T(0)$. For $n > 0$:
+
+$$
+\begin{aligned}
+T(n) &\leq T(k) + T(n-k-1) + d\\
+     &= ((c+d)k + c) - ((c+d)(n-k-1) + c) + d\\
+     &= (c+d)n + c
+\end{aligned}
+$$
+
+#### Querying a Binary Search Tree
+
+##### Search for a value
+
+We can find a value in the tree by following left or right depending whether the node we're at is larger or smaller than the value we're looking for.
+
+```{python, eval=FALSE}
+Tree-Search(x, k):
+if x == NULL or k == x.key
+  return x
+if k < x.key
+  return Tree-Search(x.left, k)
+else return Tree-Search(x.right, k)
+```
+
+We visit at most $h$ nodes where $h$ is the height of the tree, so the worst-case running time is $O(h)$.
+
+*Note*: an iterative procedure rather than recursive is actually faster on most computers.
+
+##### Minimum and Maximimum
+
+* Minimum: very leftmost leaf.
+* Maximum: very rightmost leaf.
+
+```{python, eval=FALSE}
+Tree-Minimum(x):
+while x.left != NULL:
+  x = x.left
+return x
+
+Tree-Maximum(x):
+while x.right != NULL:
+  x = x.right
+return x
+```
+
+Both of these run in $O(h)$ time, by the same logic as search.
+
+##### Successor & Predecessor
+
+* Successor: the minimum of the right subtree OR if there is no right subtree, then the lowest ancestor of $x$ whose left child is also an ancestor of $x$.
+* Predecessor: the maximum of the left subtree OR if there is no left subtree, then the lowest ancestor of $x$ whose right child is also an ancestor of $x$.
+
+```{python, eval=FALSE}
+Tree-Successor(x):
+if x.right != NULL:
+  return Tree-Minimum(x.right)
+y = x.p
+while y != NULL and x == y.right:
+# Move up the tree to the right
+  x = y
+  y = y.p
+return y
+
+# Tree-Predecessor is symmetric
+```
+
+Both of these run in $O(h)$ time, since the algorithm follows a simple path up or down the tree.
+
+__Theorem__
+We can implement the dynamic-set operations, `Search`, `Minimum`, `Maximum`, `Successor`, and `Predecessor` so that each one runs in $O(h)$ time on a binary search tree of height $h$.
+
+#### Insertion & Deletion
+
+##### Insertion
+
+```{python, eval=FALSE}
+Tree-Insert(T,z)
+y = NULL
+x = T.root
+while x != NULL: # New node always added as a leaf, traverse to an existing leaf
+  y = x
+  if z.key < x.key
+    x = x.left
+  else x = x.right
+z.p = y # Connect new node to parent
+if y == NULL:
+  T.root = z # Tree was empty
+else if z.key < y.key: # Connect parent to new node
+  y.left = z 
+else y.right = z
+```
+
+Runs in $O(h)$ time
+
+##### Deletion
+
+Deletion is more complicated, so here is an explanation in words for deleting node $z$.
+
+1) If $z$ has no left child, then replace $z$ by its right child (even if it's NULL).
+2) If $z$ has a left child but no right child, then replace $z$ by its left child.
+3) Otherwise, $z$ has two children. We find $z$'s successor $y$, which must be in its right subtree and cannot have a left child.
+  a) If $y$ is $z$'s right child, then replace $z$ with $y$, leaving $y$'s right child alone.
+  b) Otherwise, replace $y$ by its own right child, then replace $z$ with $y$.
+
+```{python, eval=FALSE}
+Transplant(T, u, v):
+# Replace the subtee rooted at node u with the subtree rooted at node v
+if u.p = NULL:
+  T.root = v
+elseif u == u.p.left:
+  u.p.left = v
+else u.p.right = v
+if v != NULL:
+  v.p = u.p
+  
+Tree-Delete(T,z):
+if z.left == NULL:
+  Transplant(T, z, z.right)
+elseif z.right == NULL:
+  Transplant(T, z, z.left)
+else y = Tree-Minimum(z.right)
+  if y.p != z:
+    Transplant(T, y, y.right)
+    y.right = z.right
+    y.right.p = y
+  Transplant(T, z, y)
+  y.left = z.left
+  y.left.p = y
+```
+
+`Transplant` runs in constant time, and all lines of `Tree-Delete` except for the call to `Tree-Minimum` run in constant time. So `Tree-Delete` runs in $O(h)$ time, bounded from above by the call to `Tree-Minimum`.
+
+### AVL trees & AVL sort
+
+#### Red-Black Trees
+
+* A binary search tree where each node has a color (either red or black)
+* No simple path from root to leaf is more than twice as long as any other - the tree is approximately __balanced__.
+
+__Red-black properties__:
+
+1) Every node is either red or black
+2) The root is black
+3) Every leaf (NULL) is black
+4) If a node is red, then both its children are black
+5) For each node, all simple paths from the node to descendant leaves contain the same number of black nodes
+
+##### Rotations
+
+* Search tree operations defined for BSTs (`Tree-Insert`, `Tree-Delete`), run in $O(\lg n)$ on a red-black tree on $n$ nodes, but they don't maintain the red-black structure.
+* Left-rotate: assume $x$ has a right child, $y$, that is not $T.nil$.  Pivot around the link between $x$ and $y$: $y$ becomes the root, $x$ becomes $y$'s left child. $y$'s left child becomes $x$'s right child. $x$'s left child and $y$'s right child are unaffected.
+* Right-rotate is symmetrical.
+* Since both rotations only modify a constant number of pointers, both run in $O(1)$ time.
+
+#### Order-Statistic Trees
+
+* An augmented red-black tree where each node has an extra attribute: $x.size$, which stores the size of the subtree rooted at $x$. $x.size = x.left.size + x.right.size + 1$.
+
+##### Retrieving an element with a given rank
+
+1) Compute $r$, the rank of $x$ in the subtree rooted at $x$.
+2) If $r = i$, then $x$ is the $i$-th smallest element in the subtree rooted at $x$.
+3) If $i < r$, then we look for the $i$-th smallest element in $x$'s left subtree.
+4) If $i > r$, then the $i$-th smallest element in the subtree rooted at $x$ is the $i-r$-th smallest element in $x$'s right subtree.
+
+```{python,eval=FALSE}
+OS-Select(x, i):
+# Returns a pointer to the i-th smallest
+# element in the subtree rooted at x
+r = x.left.size + 1
+if i == r:
+  return x
+elseif i < r:
+  return OS-Select(x.left, i)
+else return OS-Select(x.right, i - r)
+```
+
+Each recursive call goes down one level in the order-statistic tree, so the worst-case running time is $O(h)$. Since the tree is a red-black tree, the height is $O(\lg n)$. So running time of `OS-Select` is $O(\lg n)$.
+
+##### Determining the rank of an element
+
+```{python,eval=FALSE}
+OS-Rank(T,x):
+r = x.left.size + 1
+y = x
+while y != T.root:
+  if y == y.p.right:
+    r = r + y.p.left.size + 1
+  y = y.p
+return r
+```
+
+__Correctness__
+
+_Loop invariant_: At the start of each iteration of the `while` loop, $r$ is the rank of $x.key$ in the subtree rooted at node $y$.
+
+_Initialization_: Prior to the first iteration, $r$ is the rank of $x.key$ in the subtree rooted at $x$. Setting $y = x$ makes the invariant true the first time we enter the `while` loop.
+
+_Maintenance_: At the end of each iteration of the loop, we set $y = y.p$. We must show that is $r$ is the rank of $x.key$ in the subtree rooted at $y$ at the start of the loop, then $r$ is the rank of $x.key$ in the subtree rooted at $y.p$ at the end of the loop. If $y$ is a left child, then none of its siblings, nor its parent, precedes $x$ and we leave $r$ alone. If $y$ is a right child, then its sibling's subtree and its parent precede $x$, so we add $y.p.left.size$ to account for the left sibling's subtree, $+ 1$ for the parent.
+
+_Termination_: The loop terminates when $y=T.root$, so the subtree rooted at $y$ is the entire tree. Thus the value of $r$ is the rank of $x.key$ in the entire tree.
+
+__Running Time__
+
+Since each iteration of the loop takes $O(1)$ time, and $y$ goes up one level in the tree with each iteration, the worst-case running time is $O(\lg n)$.
+
+##### Insertion
+
+We can insert and delete in the same was as for a red-black tree, but we need to update the size attributes. Insertion has two phases:
+
+1) Go down the tree from the root and insert the new node as a leaf. As we go down, increment the size attribute on each node touched by 1. There are $O(\lg n)$ nodes on the traversed path, so this has cost $O(\lg n)$.
+2) Go up the tree, changing colors and performing rotations to maintain red-black properties. There are only two rotations, and only two nodes have their size attributes invalidaated. Therefore this step is $O(1)$.
+
+Insertion is $O(\lg n)$, which is asymptotically the same as for a regular red-black tree.
+
+##### Deletion
+
+Deletion also has two phases:
+
+1) Remove a node or move it upward within the tree. To update subtree sizes, traverse a simple path from the node to the root, decrementing each node's size attribute by 1. Again, this path is $O(\lg n)$ length.
+2) At most 3 rotations, $O(1)$.
+
+Deletion is also $O(\lg n)$.
+
+#### Augmenting a data structure
+
+1) Choose an underlying data structure
+2) Determing additional information to maintain in the underlying data structure
+3) Verify that we can maintain the additional information for the basic modifying operations on the underlying data structure
+4) Develop new operations
+
+##### Augmenting red-black trees
+
+__Theorem__
+
+Let $f$ be an attribute that augments a red-black tree $T$ of $n$ nodes, and suppose that the value of $f$ for each node $x$ depends on onl the information in nodes $x$, $x.left$ and $x.right$, possibly including $x.left.f$ and $x.right.f$. Then, we can maintain the values of $f$ in all nodes of $T$ during insertion and deletino without asymptotically affecting the $O(\lg n)$ performance of these operations.
+
+#### Interval Trees
+
+* Augmented red-black trees that support operations on dynamic sets of intervals
+
+##### The Interval Trichotomy
+
+For two intervals $i$ and $i'$, exactly one of the following holds:
+
+a) $i$ and $i'$ overlap
+b) $i$ is to the left of $i'$ ($i.high$ < $i'.low$)
+c) $i$ is to the right of $i'$ ($i.low$ > $i'.high$)
+
+##### Augmenting the red-black tree
+
+__Step 1: Underlying data structure__
+
+Red-black tree. Additional node attribute $x.int$ where $x.int$ has attributes $x.int.low$ and $x.int.high$. The key for the node is the low endpoint, $x.key = x.int.low$. Thus, an inorder tree walk would list intervals in sorted order by low endpoint.
+
+__Step 2: Additional information__
+
+Another attribute $x.max$ stores the maximum value of any interval endpoint stored in the subtree rooted at $x$.
+
+__Step 3: Maintaining the information__
+
+We must verify that insertion and deletion take $O(\lg n)$ time on any interval tree of $n$ nodes. Note that $x.max = max(x.int.high, x.left.max, x.right.max)$. Then by the theorem on augmenting red-black trees, insertion and deletion run in $O(\lg n)$ time.
+
+__Step 4: Developing new operations__
+
+We need a search operation to return a node whose interval overlaps with a given interval $i$, or $T.nil$ if none exists.
+
+```{python,eval=FALSE}
+Interval-Search(T, i):
+x = T.root
+while x != T.nil and i does not overlap x.int:
+  if x.left != T.nil and x.left.max >= i.low:
+    x = x.left
+  else x = x.right
+return x
+```
+
+__Running time__
+
+Each iteration of the loop takes $O(1)$ time. In the worst case the algorithm takes a simple path from root to leaf, so the running time is $O(\lg n)$.
+
+__Correctness__
+
+The `while` loop terminates when $x = T.nil$ or when $i$ overlaps $x.int$. In the later case, the answer is certainly correct. We need to show that when `Interval-Search(T,i)` returns $T.nil$, there is indeed no interval in $T$ that overlaps with $i$.
+
+_Loop invariant_: If tree $T$ contains an interval that overlaps $i$, then the subtree rooted at $x$ contains such an interval.
+
+_Initialization_: Prior to the first iteration, $x = T.root$, so the invariant holds.
+
+_Maintenance_: Each iteration either sets $x = x.right$ or $x = x.left$. 
+
+If the former occurs, then either $x.left = T.nil$ or $x.left.max < i.low$. If $x.left = T.nil$, then the subtree rooted at $x.left$ clearly does not contain an interval that overlaps $i$, so setting $x = x.right$ maintains the invariant. If $x.left.max < i.low$, then for each interval $i'$ in $x$'s left subtree:
+
+$$
+i'.high \leq x.left.max < i.low
+$$
+
+By the interval trichotomy, $i'$ and $i$ do not overlap. Therefore the left subtree of $x$ does not contain an interval that overlaps $i$, and the invariant is maintained by setting $x = x.right$.
+
+If, instead, the latter occurs, then $x.left.max \geq i.low$. Then by the definition of the $max$ attribute, the left subtree must contain some interval $i'$ such that:
+
+$$
+i'.high = x.left.max \geq i.low
+$$
+
+We need to show that in this case, if no interval overlapping $i$ exists in the left subtree, then no such interval exists anywhere in the tree. Assume there is no interval overlapping $i$ in the left subtree. We know that there is some $i'$ such that $i'.high \geq i.low$, so by the interval trichotomy, for all intervals $i'$ in the left subtree $i.high < i'.low$. Further, by the search tree property, for all intervals $i''$ in the right subtree, $i'.low \leq i''.low$. Therefore:
+
+$$
+i.high < i'.low \leq i''.low
+$$
+
+Thus, if there exists and overlapping interval in the left subtree or if there does not, setting $x = x.left$ in this case maintains the invariant.
+
+_Termination_: If the loop terminates when $x = T.nil$, then there is no interval overlapping $i$ in the subtree rooted at $x$. The contrapositive of the loop invariant implies that $T$ contains no interval overlapping $i$, and the algorithm is correct.
